@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AI Order Tracker</title>
+    <title>AI Order Chatbot</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <h2>AI Order Status Tracker 🤖</h2>
+    <div class="chat-container">
+        <h2>Order Chatbot 🤖</h2>
 
-    <input type="text" id="userInput" placeholder="Ask about your order">
-    <button onclick="trackOrder()">Ask</button>
+        <div id="chatbox"></div>
 
-    <p id="result"></p>
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Ask about your order" onkeypress="handleKey(event)">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 
