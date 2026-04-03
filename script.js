@@ -1,57 +1,44 @@
-const orders = {
-    "101": { status: "Shipped", location: "Bangalore", eta: "2 days" },
-    "102": { status: "Out for delivery", location: "Hyderabad", eta: "Today" },
-    "103": { status: "Processing", location: "Warehouse", eta: "3 days" }
-};
+const chatContainer = document.querySelector('.chat-container');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
 
-function handleKey(event) {
-    if (event.key === "Enter") {
-        sendMessage();
+sendBtn.addEventListener('click', () => {
+    const text = userInput.value.trim();
+    if (text !== "") {
+        displayUserMessage(text);
+        userInput.value = "";
+        displayBotMessage("This is a bot response to: " + text);
     }
+});
+
+userInput.addEventListener('keypress', (e) => {
+    if (e.key === "Enter") sendBtn.click();
+});
+
+function displayUserMessage(text) {
+    const msg = document.createElement('div');
+    msg.classList.add('message', 'user');
+    msg.textContent = text;
+    chatContainer.appendChild(msg);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-function sendMessage() {
-    let inputField = document.getElementById("userInput");
-    let userText = inputField.value;
-    let chatbox = document.getElementById("chatbox");
+function displayBotMessage(text) {
+    const msg = document.createElement('div');
+    msg.classList.add('message', 'bot');
 
-    if (userText.trim() === "") return;
+    // Typing dots
+    const typing = document.createElement('div');
+    typing.classList.add('typing');
+    typing.innerHTML = `<span></span><span></span><span></span>`;
+    msg.appendChild(typing);
+    chatContainer.appendChild(msg);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
 
-    // User message
-    let userMsg = document.createElement("div");
-    userMsg.className = "user-message";
-    userMsg.innerText = userText;
-    chatbox.appendChild(userMsg);
-
-    inputField.value = "";
-
-    // Typing indicator
-    let typing = document.createElement("div");
-    typing.className = "bot-message typing";
-    typing.innerText = "Typing...";
-    chatbox.appendChild(typing);
-
-    chatbox.scrollTop = chatbox.scrollHeight;
-
+    // Simulate typing
     setTimeout(() => {
-        chatbox.removeChild(typing);
-
-        let botReply = "Sorry, I couldn't find your order 😢";
-
-        for (let id in orders) {
-            if (userText.includes(id)) {
-                let order = orders[id];
-                botReply = `Your order is ${order.status} in ${order.location}. It will arrive in ${order.eta}.`;
-                break;
-            }
-        }
-
-        let botMsg = document.createElement("div");
-        botMsg.className = "bot-message";
-        botMsg.innerText = botReply;
-
-        chatbox.appendChild(botMsg);
-        chatbox.scrollTop = chatbox.scrollHeight;
-
-    }, 1000); // delay for realism
+        msg.removeChild(typing);
+        msg.textContent = text;
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }, 800 + text.length * 30); // speed depends on message length
 }
