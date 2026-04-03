@@ -1,23 +1,249 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>AI Order Chatbot</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Tracking Chatbot</title>
+
+<style>
+body {
+  background: #121212;
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.chat-container {
+  width: 450px;
+  height: 650px;
+  background: #1f1f1f;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 30px rgba(0,0,0,0.6);
+}
+
+/* ===== BACKGROUND IMAGES ===== */
+.background-layer img {
+  position: absolute;
+  width: 120px;
+  opacity: 0.25;
+  transition: transform 0.2s ease-out;
+}
+
+.truck {
+  top: 20px;
+  left: 20px;
+}
+
+.parcel {
+  bottom: 20px;
+  right: 20px;
+}
+
+/* ===== HEADER ===== */
+.chat-header {
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+  color: white;
+  padding: 15px;
+  text-shadow: 2px 2px 6px black;
+}
+
+/* ===== MESSAGES ===== */
+.messages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1;
+}
+
+.message {
+  max-width: 75%;
+  padding: 12px;
+  border-radius: 15px;
+  animation: fadeIn 0.4s ease;
+}
+
+.user {
+  background: #4caf50;
+  align-self: flex-end;
+}
+
+.bot {
+  background: #333;
+  align-self: flex-start;
+}
+
+@keyframes fadeIn {
+  from {opacity:0; transform:translateY(20px);}
+  to {opacity:1; transform:translateY(0);}
+}
+
+/* ===== INPUT ===== */
+.input-area {
+  display: flex;
+  padding: 10px;
+  background: #1b1b1b;
+}
+
+input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 20px;
+  border: none;
+  background: #333;
+  color: white;
+}
+
+button {
+  margin-left: 10px;
+  padding: 10px 15px;
+  border-radius: 20px;
+  border: none;
+  background: #4caf50;
+  color: white;
+  cursor: pointer;
+}
+
+/* ===== TYPING ===== */
+.typing span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  margin: 2px;
+  animation: blink 1s infinite;
+}
+
+.typing span:nth-child(2){animation-delay:0.2s;}
+.typing span:nth-child(3){animation-delay:0.4s;}
+
+@keyframes blink {
+  0%,80%,100%{opacity:0.2;}
+  40%{opacity:1;}
+}
+
+.emoji {
+  margin-left: 5px;
+}
+</style>
 </head>
+
 <body>
 
-    <div class="chat-container">
-        <h2>Order Chatbot 🤖</h2>
+<div class="chat-container">
 
-        <div id="chatbox"></div>
+  <!-- BACKGROUND -->
+  <div class="background-layer">
+    <img src="https://cdn-icons-png.flaticon.com/512/1995/1995574.png" class="truck">
+    <img src="https://cdn-icons-png.flaticon.com/512/3081/3081559.png" class="parcel">
+  </div>
 
-        <div class="input-area">
-            <input type="text" id="userInput" placeholder="Ask about your order" onkeypress="handleKey(event)">
-            <button onclick="sendMessage()">Send</button>
-        </div>
-    </div>
+  <!-- HEADER -->
+  <div class="chat-header">
+    🚚 Track Your Orders Instantly!
+  </div>
 
-    <script src="script.js"></script>
+  <!-- MESSAGES -->
+  <div class="messages" id="messages"></div>
+
+  <!-- INPUT -->
+  <div class="input-area">
+    <input id="input" placeholder="Type 'Track order 101'">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+</div>
+
+<script>
+const messages = document.getElementById("messages");
+
+/* ===== ORDER DATA ===== */
+const orders = {
+  "101": {text:"Delivered in 2 days", emoji:"🚚"},
+  "102": {text:"Shipped, arriving in 5 days", emoji:"📦"},
+  "103": {text:"Out for delivery today", emoji:"⏳"}
+};
+
+/* ===== ADD MESSAGE ===== */
+function addMessage(text, type="bot", emoji=""){
+  let msg = document.createElement("div");
+  msg.className = "message " + type;
+  msg.innerHTML = text + (emoji ? `<span class="emoji">${emoji}</span>` : "");
+  messages.appendChild(msg);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+/* ===== TYPING ===== */
+function typing(callback){
+  let t = document.createElement("div");
+  t.className = "message bot";
+  t.innerHTML = `<div class="typing"><span></span><span></span><span></span></div>`;
+  messages.appendChild(t);
+  messages.scrollTop = messages.scrollHeight;
+
+  setTimeout(()=>{
+    t.remove();
+    callback();
+  },1000);
+}
+
+/* ===== BOT RESPONSE ===== */
+function getResponse(input){
+  let match = input.toLowerCase().match(/track order (\d+)/);
+  if(match){
+    let id = match[1];
+    return orders[id] || {text:"Order not found", emoji:"❌"};
+  }
+  return {text:"Try 'Track order 101'", emoji:"💬"};
+}
+
+/* ===== SEND ===== */
+function sendMessage(){
+  let input = document.getElementById("input").value.trim();
+  if(!input) return;
+
+  addMessage(input,"user");
+  document.getElementById("input").value="";
+
+  typing(()=>{
+    let res = getResponse(input);
+    addMessage(res.text,"bot",res.emoji);
+  });
+}
+
+/* ===== ENTER KEY ===== */
+document.getElementById("input").addEventListener("keypress",e=>{
+  if(e.key==="Enter") sendMessage();
+});
+
+/* ===== ADD INITIAL MESSAGES FOR SCROLL ===== */
+for(let i=0;i<6;i++){
+  addMessage("Welcome! Try 'Track order 101'","bot","💬");
+}
+
+/* ===== PARALLAX ===== */
+const truck = document.querySelector(".truck");
+const parcel = document.querySelector(".parcel");
+
+messages.addEventListener("scroll",()=>{
+  let s = messages.scrollTop;
+
+  truck.style.transform = `translateY(${s*0.6}px) rotate(${s*0.2}deg)`;
+  parcel.style.transform = `translateY(${s*-0.5}px) rotate(${s*-0.2}deg)`;
+});
+</script>
 
 </body>
 </html>
