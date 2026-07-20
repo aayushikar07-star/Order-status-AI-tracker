@@ -27,7 +27,7 @@ function displayBotMessage(text) {
     const msg = document.createElement('div');
     msg.classList.add('message', 'bot');
 
-    // Typing dots
+    // Typing dots while chatbot replies
     const typing = document.createElement('div');
     typing.classList.add('typing');
     typing.innerHTML = `<span></span><span></span><span></span>`;
